@@ -66,28 +66,8 @@ public class MainActivity extends Activity {
     }
 
     private void addLanguages() {
-        languages.put("English", "en"); languages.put("Français", "fr");
-        languages.put("Español", "es"); languages.put("Português", "pt");
-        languages.put("Deutsch", "de"); languages.put("Italiano", "it");
-        languages.put("中文 (Chinese)", "zh"); languages.put("日本語 (Japanese)", "ja");
-        languages.put("한국어 (Korean)", "ko"); languages.put("العربية (Arabic)", "ar");
-        languages.put("हिन्दी (Hindi)", "hi"); languages.put("اردو (Urdu)", "ur");
-        languages.put("বাংলা (Bengali)", "bn"); languages.put("Русский (Russian)", "ru");
-        languages.put("Türkçe (Turkish)", "tr"); languages.put("Nederlands (Dutch)", "nl");
-        languages.put("Polski (Polish)", "pl"); languages.put("Українська (Ukrainian)", "uk");
-        languages.put("ไทย (Thai)", "th"); languages.put("Tiếng Việt (Vietnamese)", "vi");
-        languages.put("Bahasa Indonesia", "id"); languages.put("Bahasa Melayu", "ms");
-        languages.put("Filipino", "tl"); languages.put("Svenska (Swedish)", "sv");
-        languages.put("Ελληνικά (Greek)", "el"); languages.put("עברית (Hebrew)", "he");
-        languages.put("فارسی (Persian)", "fa"); languages.put("Română (Romanian)", "ro");
-        languages.put("Magyar (Hungarian)", "hu"); languages.put("Čeština (Czech)", "cs");
-        languages.put("Dansk (Danish)", "da"); languages.put("Suomi (Finnish)", "fi");
-        languages.put("Norsk (Norwegian)", "no"); languages.put("Hrvatski (Croatian)", "hr");
-        languages.put("Српски (Serbian)", "sr"); languages.put("Български (Bulgarian)", "bg");
-        languages.put("Kiswahili (Swahili)", "sw"); languages.put("Afrikaans", "af");
-        languages.put("Yorùbá (Yoruba)", "yo"); languages.put("Hausa", "ha");
-        languages.put("Igbo", "ig"); languages.put("Amharic", "am");
-        languages.put("Català (Catalan)", "ca"); languages.put("বাংলা (Bengali)", "bn");
+        languages.put("English", "en");
+        languages.put("Français", "fr");
     }
 
     private boolean dark() { return prefs.getString("theme", "light").equals("dark"); }
@@ -104,34 +84,63 @@ public class MainActivity extends Activity {
         scroll.setFillViewport(true);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(16), dp(16), dp(16), dp(28));
+        page.setPadding(dp(16), dp(14), dp(16), dp(28));
         page.setBackgroundColor(bg());
         scroll.addView(page);
 
-        LinearLayout hero = new LinearLayout(this);
-        hero.setOrientation(LinearLayout.VERTICAL);
-        hero.setPadding(dp(20), dp(18), dp(20), dp(18));
-        hero.setBackground(gradient(dark() ? Color.rgb(56, 37, 112) : Color.rgb(91, 55, 190),
-                dark() ? Color.rgb(30, 101, 78) : Color.rgb(37, 155, 112), dp(24)));
+        // Social-feed inspired brand bar: profile chip, strong typography, premium gradient.
         LinearLayout top = new LinearLayout(this);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        TextView brand = text("Ayomide", 30, Color.WHITE, true);
-        top.addView(brand, new LinearLayout.LayoutParams(0, -2, 1));
-        Button settings = button("⚙ Settings", Color.rgb(236, 231, 255), Color.rgb(72, 43, 145));
+        TextView mark = text("A", 22, Color.WHITE, true);
+        mark.setGravity(Gravity.CENTER);
+        mark.setBackground(gradient(purple(), green(), dp(17)));
+        top.addView(mark, new LinearLayout.LayoutParams(dp(48), dp(48)));
+        LinearLayout brandBlock = new LinearLayout(this);
+        brandBlock.setOrientation(LinearLayout.VERTICAL);
+        brandBlock.setPadding(dp(11), 0, 0, 0);
+        brandBlock.addView(text("Ayomide", 25, ink(), true));
+        brandBlock.addView(text("LANGUAGE, WITHOUT LIMITS", 9, muted(), true));
+        top.addView(brandBlock, new LinearLayout.LayoutParams(0, -2, 1));
+        Button settings = button("⚙", dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dark() ? Color.WHITE : purple());
         settings.setOnClickListener(v -> showSettings());
-        top.addView(settings, new LinearLayout.LayoutParams(-2, dp(42)));
-        hero.addView(top);
-        TextView greeting = text("Your language. Your world.", 16, Color.rgb(244, 241, 255), false);
-        LinearLayout.LayoutParams greetLp = new LinearLayout.LayoutParams(-1, -2);
-        greetLp.topMargin = dp(4); hero.addView(greeting, greetLp);
-        TextView tagline = text("Translate conversations, messages and longer text.", 12, Color.rgb(210, 255, 230), false);
-        tagline.setPadding(0, dp(7), 0, 0); hero.addView(tagline);
-        TextView profile = text("Welcome, " + prefs.getString("username", "Language explorer"), 12, Color.WHITE, true);
-        profile.setPadding(0, dp(10), 0, 0); hero.addView(profile);
-        LinearLayout.LayoutParams heroLp = new LinearLayout.LayoutParams(-1, -2);
-        heroLp.bottomMargin = dp(16); page.addView(hero, heroLp);
+        top.addView(settings, new LinearLayout.LayoutParams(dp(48), dp(46)));
+        page.addView(top);
 
-        TextView section = text("TRANSLATE", 12, green(), true);
+        LinearLayout hero = new LinearLayout(this);
+        hero.setOrientation(LinearLayout.VERTICAL);
+        hero.setPadding(dp(20), dp(20), dp(20), dp(20));
+        hero.setBackground(gradient(dark() ? Color.rgb(55,37,104) : Color.rgb(91,55,190),
+                dark() ? Color.rgb(25,95,72) : Color.rgb(36,157,111), dp(24)));
+        LinearLayout.LayoutParams heroLp = new LinearLayout.LayoutParams(-1, -2);
+        heroLp.topMargin = dp(17); heroLp.bottomMargin = dp(18); page.addView(hero, heroLp);
+        TextView welcome = text("Your world, translated.", 25, Color.WHITE, true);
+        hero.addView(welcome);
+        TextView sub = text("Write naturally. Share a thought. Understand each other.", 13, Color.rgb(241,238,255), false);
+        LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(-1, -2);
+        subLp.topMargin = dp(7); hero.addView(sub, subLp);
+        LinearLayout chipRow = new LinearLayout(this);
+        chipRow.setGravity(Gravity.CENTER_VERTICAL);
+        TextView chip = text("  ENGLISH  ⇄  FRANÇAIS  ", 12, Color.WHITE, true);
+        chip.setPadding(dp(10), dp(8), dp(10), dp(8));
+        chip.setBackground(rounded(Color.argb(45,255,255,255), dp(20)));
+        LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(-2, -2);
+        chipLp.topMargin = dp(14); hero.addView(chip, chipLp);
+
+        // Compact feed-like navigation; all items remain within the translator.
+        LinearLayout nav = new LinearLayout(this);
+        nav.setPadding(dp(4), dp(4), dp(4), dp(4));
+        nav.setBackground(rounded(panel(), dp(18), borderColor()));
+        Button translateTab = button("✦  Translate", purple(), Color.WHITE);
+        Button activityTab = button("◷  Activity", dark() ? Color.rgb(54,47,75) : Color.rgb(239,235,250), ink());
+        Button profileTab = button("◉  Profile", dark() ? Color.rgb(54,47,75) : Color.rgb(239,235,250), ink());
+        nav.addView(translateTab, new LinearLayout.LayoutParams(0, dp(44), 1));
+        LinearLayout.LayoutParams nav2 = new LinearLayout.LayoutParams(0, dp(44), 1); nav2.setMargins(dp(5),0,dp(5),0);
+        nav.addView(activityTab, nav2);
+        nav.addView(profileTab, new LinearLayout.LayoutParams(0, dp(44), 1));
+        LinearLayout.LayoutParams navLp = new LinearLayout.LayoutParams(-1, -2);
+        navLp.bottomMargin = dp(20); page.addView(nav, navLp);
+
+        TextView section = text("START A TRANSLATION", 12, green(), true);
         section.setLetterSpacing(0.12f); page.addView(section);
         LinearLayout languagesRow = new LinearLayout(this);
         languagesRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -140,87 +149,80 @@ public class MainActivity extends Activity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, names);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sourceSpinner.setAdapter(adapter); targetSpinner.setAdapter(adapter);
-        sourceSpinner.setSelection(Math.max(0, names.indexOf(prefs.getString("from", "English"))));
-        targetSpinner.setSelection(Math.max(0, names.indexOf(prefs.getString("to", "Français"))));
-        languagesRow.addView(sourceSpinner, new LinearLayout.LayoutParams(0, dp(52), 1));
-        Button swap = button("⇄", dark() ? Color.rgb(54, 47, 75) : Color.rgb(236, 231, 255), dark() ? Color.rgb(202, 184, 255) : Color.rgb(91, 55, 190));
+        sourceSpinner.setSelection(0); targetSpinner.setSelection(1);
+        languagesRow.addView(sourceSpinner, new LinearLayout.LayoutParams(0, dp(50), 1));
+        Button swap = button("⇄", dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dark() ? Color.rgb(202,184,255) : purple());
         swap.setOnClickListener(v -> swapLanguages());
         LinearLayout.LayoutParams swapLp = new LinearLayout.LayoutParams(dp(54), dp(48));
         swapLp.setMargins(dp(5), 0, dp(5), 0); languagesRow.addView(swap, swapLp);
-        languagesRow.addView(targetSpinner, new LinearLayout.LayoutParams(0, dp(52), 1));
+        languagesRow.addView(targetSpinner, new LinearLayout.LayoutParams(0, dp(50), 1));
         LinearLayout.LayoutParams langsLp = new LinearLayout.LayoutParams(-1, -2);
         langsLp.topMargin = dp(7); page.addView(languagesRow, langsLp);
 
         input = new EditText(this);
-        input.setHint("Type or paste a sentence, conversation or longer text…");
+        input.setHint("Write a message, full conversation or paste longer text…");
         input.setTextSize(prefs.getInt("fontSize", 17));
         input.setGravity(Gravity.TOP | Gravity.START);
         input.setMinLines(5); input.setPadding(dp(15), dp(15), dp(15), dp(15));
         input.setBackground(rounded(panel(), dp(18), borderColor()));
-        input.setTextColor(ink()); input.setHintTextColor(muted());
-        input.setTypeface(chosenTypeface());
-        LinearLayout.LayoutParams inputLp = new LinearLayout.LayoutParams(-1, dp(170));
+        input.setTextColor(ink()); input.setHintTextColor(muted()); input.setTypeface(chosenTypeface());
+        LinearLayout.LayoutParams inputLp = new LinearLayout.LayoutParams(-1, dp(165));
         inputLp.topMargin = dp(12); page.addView(input, inputLp);
 
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
-        Button voice = button("🎙 Voice input", dark() ? Color.rgb(34, 73, 59) : Color.rgb(225, 248, 235), dark() ? Color.rgb(143, 255, 201) : Color.rgb(25, 125, 78));
+        Button voice = button("🎙 Voice", dark() ? Color.rgb(34,73,59) : Color.rgb(225,248,235), dark() ? Color.rgb(143,255,201) : Color.rgb(25,125,78));
         voice.setOnClickListener(v -> startVoiceInput());
         translateButton = button("Translate  ↗", purple(), Color.WHITE);
         translateButton.setOnClickListener(v -> translate());
         row.addView(voice, new LinearLayout.LayoutParams(0, dp(52), 1));
-        LinearLayout.LayoutParams trLp = new LinearLayout.LayoutParams(0, dp(52), 1);
-        trLp.leftMargin = dp(8); row.addView(translateButton, trLp);
+        LinearLayout.LayoutParams trLp = new LinearLayout.LayoutParams(0, dp(52), 1); trLp.leftMargin = dp(8);
+        row.addView(translateButton, trLp);
         LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(-1, -2);
         rowLp.topMargin = dp(10); page.addView(row, rowLp);
 
-        status = text("● Online translator • Internet connection required", 12, muted(), false);
+        status = text("● Online translator · Internet connection required", 12, muted(), false);
         status.setPadding(dp(2), dp(10), 0, dp(6)); page.addView(status);
-        TextView resultLabel = text("YOUR TRANSLATION", 12, green(), true);
+        TextView resultLabel = text("TRANSLATED MESSAGE", 12, green(), true);
         resultLabel.setLetterSpacing(0.10f);
         LinearLayout.LayoutParams resultLabelLp = new LinearLayout.LayoutParams(-1, -2);
         resultLabelLp.topMargin = dp(8); page.addView(resultLabel, resultLabelLp);
-        output = text("Your translation will appear here.", prefs.getInt("fontSize", 17), ink(), false);
-        output.setTypeface(chosenTypeface());
-        output.setPadding(dp(16), dp(18), dp(16), dp(18));
-        output.setBackground(rounded(panel(), dp(18), borderColor()));
-        output.setMinHeight(dp(120));
+        output = text("Your French translation will appear here.", prefs.getInt("fontSize", 17), ink(), false);
+        output.setTypeface(chosenTypeface()); output.setPadding(dp(16), dp(18), dp(16), dp(18));
+        output.setBackground(rounded(panel(), dp(18), borderColor())); output.setMinHeight(dp(120));
         LinearLayout.LayoutParams outputLp = new LinearLayout.LayoutParams(-1, -2);
         outputLp.topMargin = dp(8); page.addView(output, outputLp);
 
         LinearLayout actions = new LinearLayout(this); actions.setOrientation(LinearLayout.HORIZONTAL);
-        Button copy = button("Copy", dark() ? Color.rgb(54, 47, 75) : Color.rgb(236, 231, 255), dark() ? Color.rgb(202, 184, 255) : Color.rgb(91, 55, 190));
+        Button copy = button("Copy", dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dark() ? Color.rgb(202,184,255) : purple());
         copy.setOnClickListener(v -> copyTranslation());
-        Button listen = button("▶ Listen", dark() ? Color.rgb(34, 73, 59) : Color.rgb(225, 248, 235), dark() ? Color.rgb(143, 255, 201) : Color.rgb(25, 125, 78));
+        Button listen = button("▶ Listen", dark() ? Color.rgb(34,73,59) : Color.rgb(225,248,235), dark() ? Color.rgb(143,255,201) : Color.rgb(25,125,78));
         listen.setOnClickListener(v -> speakTranslation());
-        Button share = button("Share", dark() ? Color.rgb(54, 47, 75) : Color.rgb(236, 231, 255), dark() ? Color.rgb(202, 184, 255) : Color.rgb(91, 55, 190));
+        Button share = button("Share", dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dark() ? Color.rgb(202,184,255) : purple());
         share.setOnClickListener(v -> shareTranslation());
         actions.addView(copy, new LinearLayout.LayoutParams(0, dp(46), 1));
-        LinearLayout.LayoutParams listenLp = new LinearLayout.LayoutParams(0, dp(46), 1);
-        listenLp.leftMargin = dp(6); actions.addView(listen, listenLp);
-        LinearLayout.LayoutParams shareLp = new LinearLayout.LayoutParams(0, dp(46), 1);
-        shareLp.leftMargin = dp(6); actions.addView(share, shareLp);
-        LinearLayout.LayoutParams actionsLp = new LinearLayout.LayoutParams(-1, -2);
-        actionsLp.topMargin = dp(8); page.addView(actions, actionsLp);
+        LinearLayout.LayoutParams listenLp = new LinearLayout.LayoutParams(0, dp(46), 1); listenLp.leftMargin = dp(6); actions.addView(listen, listenLp);
+        LinearLayout.LayoutParams shareLp = new LinearLayout.LayoutParams(0, dp(46), 1); shareLp.leftMargin = dp(6); actions.addView(share, shareLp);
+        LinearLayout.LayoutParams actionsLp = new LinearLayout.LayoutParams(-1, -2); actionsLp.topMargin = dp(8); page.addView(actions, actionsLp);
 
-        LinearLayout historyHead = new LinearLayout(this);
-        historyHead.setGravity(Gravity.CENTER_VERTICAL);
-        TextView historyTitle = text("Recent translations", 18, ink(), true);
+        LinearLayout historyHead = new LinearLayout(this); historyHead.setGravity(Gravity.CENTER_VERTICAL);
+        TextView historyTitle = text("Your activity", 19, ink(), true);
         historyHead.addView(historyTitle, new LinearLayout.LayoutParams(0, -2, 1));
-        Button clearHistory = button("Clear", dark() ? Color.rgb(54, 47, 75) : Color.rgb(236, 231, 255), dark() ? Color.rgb(202, 184, 255) : Color.rgb(91, 55, 190));
+        Button clearHistory = button("Clear", dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dark() ? Color.rgb(202,184,255) : purple());
         clearHistory.setOnClickListener(v -> confirmClearHistory());
         historyHead.addView(clearHistory, new LinearLayout.LayoutParams(-2, dp(38)));
-        LinearLayout.LayoutParams hhLp = new LinearLayout.LayoutParams(-1, -2);
-        hhLp.topMargin = dp(20); page.addView(historyHead, hhLp);
-        historyView = text("Your recent translations will appear here.", 14, ink(), false);
-        historyView.setPadding(dp(14), dp(14), dp(14), dp(14));
-        historyView.setBackground(rounded(panel(), dp(18), borderColor()));
-        LinearLayout.LayoutParams hvLp = new LinearLayout.LayoutParams(-1, -2);
-        hvLp.topMargin = dp(8); page.addView(historyView, hvLp);
-        TextView note = text("Online services can have limits or temporary outages. For important documents, review the translation before relying on it.", 11, muted(), false);
+        LinearLayout.LayoutParams hhLp = new LinearLayout.LayoutParams(-1, -2); hhLp.topMargin = dp(22); page.addView(historyHead, hhLp);
+        historyView = text("Your translation activity will appear here.", 14, ink(), false);
+        historyView.setPadding(dp(14), dp(14), dp(14), dp(14)); historyView.setBackground(rounded(panel(), dp(18), borderColor()));
+        LinearLayout.LayoutParams hvLp = new LinearLayout.LayoutParams(-1, -2); hvLp.topMargin = dp(8); page.addView(historyView, hvLp);
+
+        TextView note = text("Powered by online translation services. Results may vary by context; review important translations before use.", 11, muted(), false);
         note.setPadding(dp(2), dp(12), dp(2), 0); page.addView(note);
         setContentView(scroll);
         refreshHistory();
+        translateTab.setOnClickListener(v -> { scroll.smoothScrollTo(0, dp(220)); input.requestFocus(); });
+        activityTab.setOnClickListener(v -> scroll.post(() -> scroll.smoothScrollTo(0, historyHead.getTop() + dp(400))));
+        profileTab.setOnClickListener(v -> showSettings());
     }
 
     private void showSettings() {
