@@ -56,55 +56,72 @@ public class MainActivity extends Activity {
         scroll.setFillViewport(true);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(20), dp(24), dp(20), dp(28));
-        page.setBackgroundColor(Color.rgb(246, 248, 252));
+        page.setPadding(dp(18), dp(20), dp(18), dp(28));
+        page.setBackgroundColor(Color.rgb(248, 247, 255));
         scroll.addView(page);
+        LinearLayout hero = new LinearLayout(this);
+        hero.setOrientation(LinearLayout.VERTICAL);
+        hero.setPadding(dp(20), dp(20), dp(20), dp(20));
+        hero.setBackground(roundedGradient(Color.rgb(91, 55, 190), Color.rgb(115, 73, 215), dp(24)));
+        TextView eyebrow = new TextView(this);
+        eyebrow.setText("YOUR LANGUAGE COMPANION");
+        eyebrow.setTextSize(10); eyebrow.setLetterSpacing(0.12f);
+        eyebrow.setTypeface(null, Typeface.BOLD); eyebrow.setTextColor(Color.rgb(213, 255, 231));
+        hero.addView(eyebrow);
         TextView brand = new TextView(this);
-        brand.setText("Ayomide"); brand.setTextSize(30); brand.setTypeface(null, Typeface.BOLD);
-        brand.setTextColor(Color.rgb(23, 37, 84)); page.addView(brand);
+        brand.setText("Ayomide"); brand.setTextSize(32); brand.setTypeface(null, Typeface.BOLD);
+        brand.setTextColor(Color.WHITE); brand.setPadding(0, dp(5), 0, 0); hero.addView(brand);
         TextView subtitle = new TextView(this);
-        subtitle.setText("English  ↔  Français"); subtitle.setTextSize(16);
-        subtitle.setTextColor(Color.rgb(91, 103, 129)); subtitle.setPadding(0, dp(3), 0, dp(18)); page.addView(subtitle);
+        subtitle.setText("A clearer way to say it.");
+        subtitle.setTextSize(15); subtitle.setTextColor(Color.rgb(242, 238, 255));
+        subtitle.setPadding(0, dp(3), 0, dp(4)); hero.addView(subtitle);
+        TextView languagesCaption = new TextView(this);
+        languagesCaption.setText("ENGLISH  ↔  FRANÇAIS");
+        languagesCaption.setTextSize(11); languagesCaption.setTypeface(null, Typeface.BOLD);
+        languagesCaption.setTextColor(Color.rgb(190, 255, 214));
+        languagesCaption.setPadding(0, dp(8), 0, 0); hero.addView(languagesCaption);
+        LinearLayout.LayoutParams heroLp = new LinearLayout.LayoutParams(-1, -2);
+        heroLp.bottomMargin = dp(20); page.addView(hero, heroLp);
         LinearLayout languages = new LinearLayout(this); languages.setOrientation(LinearLayout.HORIZONTAL);
         sourceSpinner = new Spinner(this); targetSpinner = new Spinner(this);
         String[] langs = {"English", "Français"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, langs);
         sourceSpinner.setAdapter(adapter); targetSpinner.setAdapter(adapter); targetSpinner.setSelection(1);
         languages.addView(sourceSpinner, new LinearLayout.LayoutParams(0, dp(48), 1));
-        Button swap = new Button(this); swap.setText("⇄"); swap.setOnClickListener(v -> swapLanguages());
+        Button swap = new Button(this); swap.setText("⇄"); styleButton(swap, Color.rgb(236, 231, 255), Color.rgb(91, 55, 190)); swap.setOnClickListener(v -> swapLanguages());
         languages.addView(swap, new LinearLayout.LayoutParams(dp(64), dp(48)));
         languages.addView(targetSpinner, new LinearLayout.LayoutParams(0, dp(48), 1)); page.addView(languages);
         input = new EditText(this); input.setHint("Type something to translate…"); input.setTextSize(17);
         input.setGravity(Gravity.TOP | Gravity.START); input.setMinLines(4); input.setPadding(dp(14), dp(14), dp(14), dp(14));
-        input.setBackgroundColor(Color.WHITE); input.setTextColor(Color.rgb(30, 41, 59));
+        input.setBackground(rounded(Color.WHITE, dp(18), Color.rgb(230, 225, 245))); input.setTextColor(Color.rgb(42, 34, 67)); input.setHintTextColor(Color.rgb(145, 137, 165));
         LinearLayout.LayoutParams inputLp = new LinearLayout.LayoutParams(-1, dp(140)); inputLp.topMargin = dp(14); page.addView(input, inputLp);
         LinearLayout row = new LinearLayout(this); row.setOrientation(LinearLayout.HORIZONTAL);
-        Button voice = new Button(this); voice.setText("🎙 Voice"); voice.setOnClickListener(v -> startVoiceInput());
+        Button voice = new Button(this); voice.setText("🎙  Voice"); styleButton(voice, Color.rgb(225, 248, 235), Color.rgb(25, 125, 78)); voice.setOnClickListener(v -> startVoiceInput());
         translateButton = new Button(this); translateButton.setText("Translate"); translateButton.setTextColor(Color.WHITE);
-        translateButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.rgb(49, 87, 213)));
+        styleButton(translateButton, Color.rgb(91, 55, 190), Color.WHITE);
         translateButton.setOnClickListener(v -> translate());
         row.addView(voice, new LinearLayout.LayoutParams(0, dp(52), 1));
         row.addView(translateButton, new LinearLayout.LayoutParams(0, dp(52), 1)); page.addView(row);
         status = new TextView(this); status.setText("Online translation • Internet required"); status.setTextSize(12);
-        status.setTextColor(Color.rgb(100, 116, 139)); status.setPadding(0, dp(8), 0, dp(8)); page.addView(status);
+        status.setTextColor(Color.rgb(113, 102, 143)); status.setPadding(0, dp(8), 0, dp(8)); page.addView(status);
         TextView resultLabel = new TextView(this); resultLabel.setText("TRANSLATION"); resultLabel.setTextSize(12);
-        resultLabel.setTypeface(null, Typeface.BOLD); resultLabel.setTextColor(Color.rgb(91, 103, 129));
+        resultLabel.setTypeface(null, Typeface.BOLD); resultLabel.setTextColor(Color.rgb(91, 55, 190)); resultLabel.setLetterSpacing(0.10f);
         resultLabel.setPadding(0, dp(10), 0, dp(6)); page.addView(resultLabel);
         output = new TextView(this); output.setText("Your translation will appear here."); output.setTextSize(18);
-        output.setTextColor(Color.rgb(30, 41, 59)); output.setPadding(dp(14), dp(16), dp(14), dp(16));
-        output.setBackgroundColor(Color.WHITE); output.setMinHeight(dp(100)); page.addView(output);
+        output.setTextColor(Color.rgb(42, 34, 67)); output.setPadding(dp(16), dp(18), dp(16), dp(18));
+        output.setBackground(rounded(Color.WHITE, dp(18), Color.rgb(230, 225, 245))); output.setMinHeight(dp(108)); page.addView(output);
         LinearLayout actions = new LinearLayout(this); actions.setOrientation(LinearLayout.HORIZONTAL);
-        Button copy = new Button(this); copy.setText("Copy"); copy.setOnClickListener(v -> copyTranslation());
-        Button listen = new Button(this); listen.setText("▶ Listen"); listen.setOnClickListener(v -> speakTranslation());
-        Button share = new Button(this); share.setText("Share"); share.setOnClickListener(v -> shareTranslation());
+        Button copy = new Button(this); copy.setText("Copy"); styleButton(copy, Color.rgb(236, 231, 255), Color.rgb(91, 55, 190)); copy.setOnClickListener(v -> copyTranslation());
+        Button listen = new Button(this); listen.setText("▶ Listen"); styleButton(listen, Color.rgb(225, 248, 235), Color.rgb(25, 125, 78)); listen.setOnClickListener(v -> speakTranslation());
+        Button share = new Button(this); share.setText("Share"); styleButton(share, Color.rgb(236, 231, 255), Color.rgb(91, 55, 190)); share.setOnClickListener(v -> shareTranslation());
         actions.addView(copy, new LinearLayout.LayoutParams(0, dp(48), 1));
         actions.addView(listen, new LinearLayout.LayoutParams(0, dp(48), 1));
         actions.addView(share, new LinearLayout.LayoutParams(0, dp(48), 1)); page.addView(actions);
         TextView historyTitle = new TextView(this); historyTitle.setText("Recent translations"); historyTitle.setTextSize(18);
-        historyTitle.setTypeface(null, Typeface.BOLD); historyTitle.setTextColor(Color.rgb(23, 37, 84));
+        historyTitle.setTypeface(null, Typeface.BOLD); historyTitle.setTextColor(Color.rgb(61, 42, 111));
         historyTitle.setPadding(0, dp(20), 0, dp(8)); page.addView(historyTitle);
         historyView = new TextView(this); historyView.setTextSize(14); historyView.setTextColor(Color.rgb(71, 85, 105));
-        historyView.setPadding(dp(12), dp(12), dp(12), dp(12)); historyView.setBackgroundColor(Color.WHITE); page.addView(historyView);
+        historyView.setPadding(dp(14), dp(14), dp(14), dp(14)); historyView.setBackground(rounded(Color.WHITE, dp(18), Color.rgb(230, 225, 245))); page.addView(historyView);
         TextView note = new TextView(this); note.setText("Translations are provided online by MyMemory. Review important or formal translations before using them.");
         note.setTextSize(12); note.setTextColor(Color.rgb(100, 116, 139)); note.setPadding(0, dp(14), 0, 0); page.addView(note);
         setContentView(scroll);
@@ -206,6 +223,24 @@ public class MainActivity extends Activity {
         StringBuilder b = new StringBuilder();
         for (int i = 0; i < history.size(); i++) { if (i > 0) b.append("\n\n──────────\n\n"); b.append(history.get(i)); }
         historyView.setText(b.toString());
+    }
+    private android.graphics.drawable.GradientDrawable rounded(int color, int radius, int stroke) {
+        android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable();
+        d.setColor(color); d.setCornerRadius(radius); d.setStroke(dp(1), stroke); return d;
+    }
+    private android.graphics.drawable.GradientDrawable rounded(int color, int radius) {
+        android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable();
+        d.setColor(color); d.setCornerRadius(radius); return d;
+    }
+    private android.graphics.drawable.GradientDrawable roundedGradient(int start, int end, int radius) {
+        android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TL_BR, new int[]{start, end});
+        d.setCornerRadius(radius); return d;
+    }
+    private void styleButton(Button button, int background, int foreground) {
+        button.setAllCaps(false); button.setTextSize(14); button.setTypeface(null, Typeface.BOLD);
+        button.setTextColor(foreground); button.setBackground(rounded(background, dp(15)));
+        button.setElevation(dp(1)); button.setPadding(dp(8), dp(4), dp(8), dp(4));
     }
     private int dp(int value) { return (int)(value * getResources().getDisplayMetrics().density + 0.5f); }
     @Override protected void onDestroy() { if (tts != null) { tts.stop(); tts.shutdown(); } executor.shutdownNow(); super.onDestroy(); }
