@@ -66,6 +66,7 @@ public class MainActivity extends Activity {
         prefs = getSharedPreferences("ayomide", MODE_PRIVATE);
         addLanguages();
         loadHistory();
+        loadFavourites();
         buildUi();
         tts = new TextToSpeech(this, result -> { if (result == TextToSpeech.SUCCESS) ttsReady = true; });
     }
@@ -186,8 +187,30 @@ public class MainActivity extends Activity {
         input.setMinLines(5); input.setPadding(dp(15), dp(15), dp(15), dp(15));
         input.setBackground(rounded(dark() ? Color.rgb(48,37,76) : Color.rgb(239,232,255), dp(18), dark() ? Color.rgb(83,66,125) : Color.rgb(216,203,250)));
         input.setTextColor(ink()); input.setHintTextColor(muted()); input.setTypeface(chosenTypeface());
-        LinearLayout.LayoutParams inputLp = new LinearLayout.LayoutParams(-1, dp(165));
+        LinearLayout.LayoutParams inputLp = new LinearLayout.LayoutParams(-1, dp(prefs.getString("mode", "chat").equals("page") ? 250 : 165));
         inputLp.topMargin = dp(12); page.addView(input, inputLp);
+
+        LinearLayout modeRow = new LinearLayout(this);
+        modeRow.setOrientation(LinearLayout.HORIZONTAL);
+        Button chatMode = button("▣ Conversation", prefs.getString("mode", "chat").equals("chat") ? purple() : (dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255)), prefs.getString("mode", "chat").equals("chat") ? Color.WHITE : ink());
+        Button pageMode = button("▤ Long page", prefs.getString("mode", "chat").equals("page") ? green() : (dark() ? Color.rgb(54,47,75) : Color.rgb(225,248,235)), prefs.getString("mode", "chat").equals("page") ? Color.WHITE : ink());
+        modeRow.addView(chatMode, new LinearLayout.LayoutParams(0, dp(42), 1));
+        LinearLayout.LayoutParams pageModeLp = new LinearLayout.LayoutParams(0, dp(42), 1); pageModeLp.leftMargin = dp(7); modeRow.addView(pageMode, pageModeLp);
+        LinearLayout.LayoutParams modeLp = new LinearLayout.LayoutParams(-1, -2); modeLp.topMargin = dp(8); page.addView(modeRow, modeLp);
+        chatMode.setOnClickListener(v -> {
+            prefs.edit().putString("mode", "chat").apply();
+            input.setHint("Write a message or conversation in English…");
+            ViewGroup.LayoutParams p = input.getLayoutParams(); p.height = dp(165); input.setLayoutParams(p);
+            input.setMinLines(5); chatMode.setBackground(rounded(purple(), dp(15), Color.TRANSPARENT)); chatMode.setTextColor(Color.WHITE);
+            pageMode.setBackground(rounded(dark() ? Color.rgb(54,47,75) : Color.rgb(225,248,235), dp(15), Color.TRANSPARENT)); pageMode.setTextColor(ink());
+        });
+        pageMode.setOnClickListener(v -> {
+            prefs.edit().putString("mode", "page").apply();
+            input.setHint("Paste a long paragraph, article or page to translate…");
+            ViewGroup.LayoutParams p = input.getLayoutParams(); p.height = dp(250); input.setLayoutParams(p);
+            input.setMinLines(9); pageMode.setBackground(rounded(green(), dp(15), Color.TRANSPARENT)); pageMode.setTextColor(Color.WHITE);
+            chatMode.setBackground(rounded(dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dp(15), Color.TRANSPARENT)); chatMode.setTextColor(ink());
+        });
 
         LinearLayout inputTools = new LinearLayout(this);
         inputTools.setOrientation(LinearLayout.HORIZONTAL);
@@ -356,12 +379,16 @@ public class MainActivity extends Activity {
         toast("Saved to favourites");
     }
 
-    private void showFavourites() {
+    private void loadFavourites() {
         favourites.clear();
         try {
             JSONArray array = new JSONArray(prefs.getString("favourites", "[]"));
             for (int i = 0; i < array.length(); i++) favourites.add(array.optString(i));
         } catch (Exception ignored) {}
+    }
+
+    private void showFavourites() {
+        loadFavourites();
         if (favourites.isEmpty()) {
             new AlertDialog.Builder(this).setTitle("Saved translations")
                 .setMessage("Your favourites will appear here. Translate a message and tap ☆ Save.")
