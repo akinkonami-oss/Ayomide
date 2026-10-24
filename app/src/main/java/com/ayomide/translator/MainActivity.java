@@ -347,7 +347,7 @@ public class MainActivity extends Activity {
             if (segment != null && !segment.isNull(0)) result.append(segment.optString(0, ""));
         }
         if (result.toString().trim().isEmpty()) throw new Exception("Empty response");
-        return Html.fromHtml(result.toString(), Html.FROM_HTML_MODE_LEGACY).toString();
+        return Html.fromHtml(result.toString()).toString();
     }
 
     private String myMemoryTranslate(String text, String from, String to) throws Exception {
@@ -361,7 +361,7 @@ public class MainActivity extends Activity {
         JSONObject data = json.optJSONObject("responseData");
         String result = data == null ? "" : data.optString("translatedText", "");
         if (result.trim().isEmpty() || result.equalsIgnoreCase("null")) throw new Exception("No translation returned");
-        return Html.fromHtml(result, Html.FROM_HTML_MODE_LEGACY).toString();
+        return Html.fromHtml(result).toString();
     }
 
     private String httpGet(String address, int timeout) throws Exception {
