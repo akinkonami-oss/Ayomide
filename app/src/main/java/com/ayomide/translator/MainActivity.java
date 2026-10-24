@@ -319,8 +319,16 @@ public class MainActivity extends Activity {
         Exception first = null;
         try { return googleTranslate(text, from, to); }
         catch (Exception e) { first = e; }
-        try { return myMemoryTranslate(text, from, to); }
-        catch (Exception e) {
+        try {
+            if (text.length() <= 450) return myMemoryTranslate(text, from, to);
+            ArrayList<String> backupParts = splitText(text, 400);
+            StringBuilder combined = new StringBuilder();
+            for (String part : backupParts) {
+                if (combined.length() > 0) combined.append(" ");
+                combined.append(myMemoryTranslate(part, from, to).trim());
+            }
+            return combined.toString();
+        } catch (Exception e) {
             String detail = e.getMessage();
             if (detail == null || detail.trim().isEmpty()) detail = first == null ? "" : first.getMessage();
             throw new Exception("Online translation failed. Check your internet connection or try again in a moment." + (detail == null || detail.isEmpty() ? "" : "\nDetails: " + detail));
