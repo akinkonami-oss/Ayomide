@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.text.Html;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +37,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -55,6 +58,8 @@ public class MainActivity extends Activity {
     private final LinkedHashMap<String, String> languages = new LinkedHashMap<>();
     private boolean translating = false;
     private String latestTranslation = "";
+    private boolean sourceWatcherReady = false;
+    private final ArrayList<String> favourites = new ArrayList<>();
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -126,15 +131,30 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(-2, -2);
         chipLp.topMargin = dp(14); hero.addView(chip, chipLp);
 
+        LinearLayout daily = new LinearLayout(this);
+        daily.setOrientation(LinearLayout.VERTICAL);
+        daily.setPadding(dp(16), dp(14), dp(16), dp(14));
+        daily.setBackground(rounded(dark() ? Color.rgb(39,58,52) : Color.rgb(231,250,239), dp(18), dark() ? Color.rgb(49,100,76) : Color.rgb(195,235,208)));
+        TextView dailyEyebrow = text("✦  DAILY FRENCH", 11, green(), true);
+        daily.addView(dailyEyebrow);
+        TextView dailyPhrase = text(getDailyPhrase()[0], 18, dark() ? Color.rgb(226,255,237) : Color.rgb(28,91,59), true);
+        LinearLayout.LayoutParams phraseLp = new LinearLayout.LayoutParams(-1, -2); phraseLp.topMargin = dp(5); daily.addView(dailyPhrase, phraseLp);
+        TextView dailyMeaning = text(getDailyPhrase()[1] + "  ·  Tap for an example", 12, dark() ? Color.rgb(194,225,205) : Color.rgb(65,116,83), false);
+        LinearLayout.LayoutParams meaningLp = new LinearLayout.LayoutParams(-1, -2); meaningLp.topMargin = dp(4); daily.addView(dailyMeaning, meaningLp);
+        daily.setOnClickListener(v -> showDailyPhrase());
+        LinearLayout.LayoutParams dailyLp = new LinearLayout.LayoutParams(-1, -2); dailyLp.topMargin = dp(14); dailyLp.bottomMargin = dp(16); page.addView(daily, dailyLp);
+
         // Compact feed-like navigation; all items remain within the translator.
         LinearLayout nav = new LinearLayout(this);
         nav.setPadding(dp(4), dp(4), dp(4), dp(4));
         nav.setBackground(rounded(panel(), dp(18), borderColor()));
-        Button translateTab = button("✦  Translate", purple(), Color.WHITE);
-        Button activityTab = button("◷  Activity", dark() ? Color.rgb(54,47,75) : Color.rgb(239,235,250), ink());
-        Button profileTab = button("◉  Profile", dark() ? Color.rgb(54,47,75) : Color.rgb(239,235,250), ink());
+        Button translateTab = button("◫ Chat", purple(), Color.WHITE);
+        Button discoverTab = button("✦ Daily", dark() ? Color.rgb(54,47,75) : Color.rgb(239,235,250), ink());
+        Button activityTab = button("☆ Saved", dark() ? Color.rgb(54,47,75) : Color.rgb(239,235,250), ink());
+        Button profileTab = button("◉ Me", dark() ? Color.rgb(54,47,75) : Color.rgb(239,235,250), ink());
         nav.addView(translateTab, new LinearLayout.LayoutParams(0, dp(44), 1));
-        LinearLayout.LayoutParams nav2 = new LinearLayout.LayoutParams(0, dp(44), 1); nav2.setMargins(dp(5),0,dp(5),0);
+        LinearLayout.LayoutParams nav2 = new LinearLayout.LayoutParams(0, dp(44), 1); nav2.setMargins(dp(3),0,dp(3),0);
+        nav.addView(discoverTab, nav2);
         nav.addView(activityTab, nav2);
         nav.addView(profileTab, new LinearLayout.LayoutParams(0, dp(44), 1));
         LinearLayout.LayoutParams navLp = new LinearLayout.LayoutParams(-1, -2);
@@ -169,6 +189,16 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams inputLp = new LinearLayout.LayoutParams(-1, dp(165));
         inputLp.topMargin = dp(12); page.addView(input, inputLp);
 
+        LinearLayout inputTools = new LinearLayout(this);
+        inputTools.setOrientation(LinearLayout.HORIZONTAL);
+        Button clearSource = button("Clear text", dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dark() ? Color.rgb(202,184,255) : purple());
+        clearSource.setOnClickListener(v -> { input.setText(""); latestTranslation = ""; output.setText("Your French translation will appear here."); status.setText("Ready for a new translation"); });
+        Button selectAll = button("Select all", dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dark() ? Color.rgb(202,184,255) : purple());
+        selectAll.setOnClickListener(v -> { input.requestFocus(); input.selectAll(); });
+        inputTools.addView(clearSource, new LinearLayout.LayoutParams(0, dp(40), 1));
+        LinearLayout.LayoutParams selectLp = new LinearLayout.LayoutParams(0, dp(40), 1); selectLp.leftMargin = dp(7); inputTools.addView(selectAll, selectLp);
+        LinearLayout.LayoutParams toolsLp = new LinearLayout.LayoutParams(-1, -2); toolsLp.topMargin = dp(6); page.addView(inputTools, toolsLp);
+
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         Button voice = button("🎙 Voice", dark() ? Color.rgb(34,73,59) : Color.rgb(225,248,235), dark() ? Color.rgb(143,255,201) : Color.rgb(25,125,78));
@@ -189,7 +219,8 @@ public class MainActivity extends Activity {
         resultLabelLp.topMargin = dp(8); page.addView(resultLabel, resultLabelLp);
         output = text("Your French translation will appear here.", prefs.getInt("fontSize", 17), ink(), false);
         output.setTypeface(chosenTypeface()); output.setPadding(dp(16), dp(18), dp(16), dp(18));
-        output.setBackground(rounded(panel(), dp(18), borderColor())); output.setMinHeight(dp(120));
+        output.setBackground(rounded(dark() ? Color.rgb(25,70,53) : Color.rgb(226,248,235), dp(18), dark() ? Color.rgb(43,105,77) : Color.rgb(193,235,207)));
+        output.setTextIsSelectable(true); output.setMinHeight(dp(120));
         LinearLayout.LayoutParams outputLp = new LinearLayout.LayoutParams(-1, -2);
         outputLp.topMargin = dp(8); page.addView(output, outputLp);
 
@@ -200,9 +231,12 @@ public class MainActivity extends Activity {
         listen.setOnClickListener(v -> speakTranslation());
         Button share = button("Share", dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dark() ? Color.rgb(202,184,255) : purple());
         share.setOnClickListener(v -> shareTranslation());
+        Button save = button("☆ Save", dark() ? Color.rgb(54,47,75) : Color.rgb(236,231,255), dark() ? Color.rgb(202,184,255) : purple());
+        save.setOnClickListener(v -> saveFavourite());
         actions.addView(copy, new LinearLayout.LayoutParams(0, dp(46), 1));
-        LinearLayout.LayoutParams listenLp = new LinearLayout.LayoutParams(0, dp(46), 1); listenLp.leftMargin = dp(6); actions.addView(listen, listenLp);
-        LinearLayout.LayoutParams shareLp = new LinearLayout.LayoutParams(0, dp(46), 1); shareLp.leftMargin = dp(6); actions.addView(share, shareLp);
+        LinearLayout.LayoutParams listenLp = new LinearLayout.LayoutParams(0, dp(46), 1); listenLp.leftMargin = dp(4); actions.addView(listen, listenLp);
+        LinearLayout.LayoutParams shareLp = new LinearLayout.LayoutParams(0, dp(46), 1); shareLp.leftMargin = dp(4); actions.addView(share, shareLp);
+        LinearLayout.LayoutParams saveLp = new LinearLayout.LayoutParams(0, dp(46), 1); saveLp.leftMargin = dp(4); actions.addView(save, saveLp);
         LinearLayout.LayoutParams actionsLp = new LinearLayout.LayoutParams(-1, -2); actionsLp.topMargin = dp(8); page.addView(actions, actionsLp);
 
         LinearLayout historyHead = new LinearLayout(this); historyHead.setGravity(Gravity.CENTER_VERTICAL);
@@ -220,8 +254,27 @@ public class MainActivity extends Activity {
         note.setPadding(dp(2), dp(12), dp(2), 0); page.addView(note);
         setContentView(scroll);
         refreshHistory();
+        sourceWatcherReady = false;
+        input.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!sourceWatcherReady || translating) return;
+                if (s.length() == 0) {
+                    latestTranslation = "";
+                    if (output != null) output.setText("Your French translation will appear here.");
+                    if (status != null) status.setText("Ready for a new translation");
+                } else if (latestTranslation != null && !latestTranslation.isEmpty()) {
+                    latestTranslation = "";
+                    if (output != null) output.setText("Source edited — translate again to refresh this result.");
+                    if (status != null) status.setText("Translation needs updating");
+                }
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+        sourceWatcherReady = true;
         translateTab.setOnClickListener(v -> { scroll.smoothScrollTo(0, dp(220)); input.requestFocus(); });
-        activityTab.setOnClickListener(v -> scroll.post(() -> scroll.smoothScrollTo(0, historyHead.getTop() + dp(400))));
+        discoverTab.setOnClickListener(v -> showDailyPhrase());
+        activityTab.setOnClickListener(v -> showFavourites());
         profileTab.setOnClickListener(v -> showSettings());
     }
 
@@ -244,10 +297,10 @@ public class MainActivity extends Activity {
         box.addView(size);
         box.addView(label("Font style"));
         Spinner font = new Spinner(this);
-        ArrayAdapter<String> fontAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Modern Sans", "Serif", "Monospace"});
+        ArrayAdapter<String> fontAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Inter / Modern Sans", "Roboto", "Lato", "Nunito", "Serif", "Monospace"});
         font.setAdapter(fontAdapter);
         String fontName = prefs.getString("fontStyle", "sans");
-        font.setSelection(fontName.equals("serif") ? 1 : fontName.equals("mono") ? 2 : 0);
+        font.setSelection(fontName.equals("serif") ? 4 : fontName.equals("mono") ? 5 : fontName.equals("roboto") ? 1 : fontName.equals("lato") ? 2 : fontName.equals("nunito") ? 3 : 0);
         box.addView(font);
         new AlertDialog.Builder(this).setTitle("Ayomide settings").setView(box)
                 .setNegativeButton("Cancel", null)
@@ -255,7 +308,7 @@ public class MainActivity extends Activity {
                     prefs.edit().putString("username", username.getText().toString().trim())
                             .putString("theme", theme.getSelectedItemPosition() == 1 ? "dark" : "light")
                             .putInt("fontSize", new int[]{14,17,20,23}[size.getSelectedItemPosition()])
-                            .putString("fontStyle", new String[]{"sans","serif","mono"}[font.getSelectedItemPosition()]).apply();
+                            .putString("fontStyle", new String[]{"sans","roboto","lato","nunito","serif","mono"}[font.getSelectedItemPosition()]).apply();
                     String savedInput = input == null ? "" : input.getText().toString();
                     String savedOutput = output == null ? "" : output.getText().toString();
                     buildUi();
@@ -263,6 +316,72 @@ public class MainActivity extends Activity {
                     output.setText(savedOutput);
                     Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show();
                 }).show();
+    }
+
+    private String[] getDailyPhrase() {
+        String[][] phrases = new String[][] {
+            {"Ça me fait plaisir de te rencontrer.", "It’s a pleasure to meet you."},
+            {"Tu peux compter sur moi.", "You can count on me."},
+            {"Prends ton temps.", "Take your time."},
+            {"Je te tiens au courant.", "I’ll keep you posted."},
+            {"Ça vaut vraiment la peine.", "It’s really worth it."},
+            {"Je suis en route.", "I’m on my way."},
+            {"On en reparle plus tard.", "We’ll talk about it later."}
+        };
+        int day = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+        return phrases[day % phrases.length];
+    }
+
+    private void showDailyPhrase() {
+        String[] phrase = getDailyPhrase();
+        new AlertDialog.Builder(this).setTitle("Daily French ✦")
+            .setMessage(phrase[0] + "\n\nEnglish: " + phrase[1] + "\n\nExample: Bonjour ! Ça me fait plaisir de te rencontrer.\n\nTip: Read it aloud, then try using it in a real conversation.")
+            .setPositiveButton("Copy French", (d,w) -> copyText(phrase[0], "Daily French phrase copied"))
+            .setNeutralButton("Practise it", (d,w) -> { input.setText(phrase[0]); sourceSpinner.setSelection(1); targetSpinner.setSelection(0); input.setSelection(input.length()); })
+            .setNegativeButton("Close", null).show();
+    }
+
+    private void saveFavourite() {
+        String source = input.getText().toString().trim();
+        String target = output.getText().toString().trim();
+        if (source.isEmpty() || target.isEmpty() || target.equals("Your French translation will appear here.") || target.startsWith("Source edited")) {
+            toast("Translate a message before saving it"); return;
+        }
+        String item = source + "\n→ " + target;
+        if (!favourites.contains(item)) favourites.add(0, item);
+        while (favourites.size() > 100) favourites.remove(favourites.size() - 1);
+        JSONArray array = new JSONArray();
+        for (String fav : favourites) array.put(fav);
+        prefs.edit().putString("favourites", array.toString()).apply();
+        toast("Saved to favourites");
+    }
+
+    private void showFavourites() {
+        favourites.clear();
+        try {
+            JSONArray array = new JSONArray(prefs.getString("favourites", "[]"));
+            for (int i = 0; i < array.length(); i++) favourites.add(array.optString(i));
+        } catch (Exception ignored) {}
+        if (favourites.isEmpty()) {
+            new AlertDialog.Builder(this).setTitle("Saved translations")
+                .setMessage("Your favourites will appear here. Translate a message and tap ☆ Save.")
+                .setPositiveButton("Got it", null).show(); return;
+        }
+        String[] items = favourites.toArray(new String[0]);
+        new AlertDialog.Builder(this).setTitle("Saved translations")
+            .setItems(items, (d, which) -> new AlertDialog.Builder(this).setTitle("Favourite")
+                .setMessage(items[which]).setPositiveButton("Copy", (dd, ww) -> copyText(items[which], "Favourite copied"))
+                .setNeutralButton("Delete", (dd, ww) -> {
+                    favourites.remove(items[which]); JSONArray arr = new JSONArray();
+                    for (String fav : favourites) arr.put(fav);
+                    prefs.edit().putString("favourites", arr.toString()).apply(); toast("Favourite removed");
+                }).setNegativeButton("Close", null).show())
+            .setNegativeButton("Close", null).show();
+    }
+
+    private void copyText(String text, String message) {
+        ClipboardManager clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+        clipboard.setPrimaryClip(ClipData.newPlainText("Ayomide", text)); toast(message);
     }
 
     private TextView label(String value) {
@@ -274,6 +393,9 @@ public class MainActivity extends Activity {
         String f = prefs.getString("fontStyle", "sans");
         if (f.equals("serif")) return Typeface.SERIF;
         if (f.equals("mono")) return Typeface.MONOSPACE;
+        if (f.equals("roboto")) return Typeface.create("sans-serif", Typeface.NORMAL);
+        if (f.equals("lato")) return Typeface.create("sans-serif-light", Typeface.NORMAL);
+        if (f.equals("nunito")) return Typeface.create("sans-serif-rounded", Typeface.NORMAL);
         return Typeface.create("sans-serif", Typeface.NORMAL);
     }
 
