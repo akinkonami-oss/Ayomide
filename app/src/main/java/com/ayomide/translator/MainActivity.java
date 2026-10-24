@@ -184,7 +184,7 @@ public class MainActivity extends Activity {
         input.setTextSize(prefs.getInt("fontSize", 17));
         input.setGravity(Gravity.TOP | Gravity.START);
         input.setMinLines(5); input.setPadding(dp(15), dp(15), dp(15), dp(15));
-        input.setBackground(rounded(panel(), dp(18), borderColor()));
+        input.setBackground(rounded(dark() ? Color.rgb(48,37,76) : Color.rgb(239,232,255), dp(18), dark() ? Color.rgb(83,66,125) : Color.rgb(216,203,250)));
         input.setTextColor(ink()); input.setHintTextColor(muted()); input.setTypeface(chosenTypeface());
         LinearLayout.LayoutParams inputLp = new LinearLayout.LayoutParams(-1, dp(165));
         inputLp.topMargin = dp(12); page.addView(input, inputLp);
