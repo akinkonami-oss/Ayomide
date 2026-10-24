@@ -122,7 +122,7 @@ public class MainActivity extends Activity {
         chipRow.setGravity(Gravity.CENTER_VERTICAL);
         TextView chip = text("  ENGLISH  ⇄  FRANÇAIS  ", 12, Color.WHITE, true);
         chip.setPadding(dp(10), dp(8), dp(10), dp(8));
-        chip.setBackground(rounded(Color.argb(45,255,255,255), dp(20)));
+        chip.setBackground(rounded(Color.argb(45,255,255,255), dp(20), Color.TRANSPARENT));
         LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(-2, -2);
         chipLp.topMargin = dp(14); hero.addView(chip, chipLp);
 
@@ -501,7 +501,7 @@ public class MainActivity extends Activity {
     private Button button(String value, int background, int foreground) {
         Button b = new Button(this); b.setText(value); b.setAllCaps(false); b.setTextSize(13);
         b.setTypeface(chosenTypeface(), Typeface.BOLD); b.setTextColor(foreground);
-        b.setBackground(rounded(background, dp(15))); b.setElevation(dp(1));
+        b.setBackground(rounded(background, dp(15), Color.TRANSPARENT)); b.setElevation(dp(1));
         b.setPadding(dp(7), dp(3), dp(7), dp(3)); return b;
     }
 
